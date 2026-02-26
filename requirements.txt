@@ -1,0 +1,8 @@
+celery
+python-dotenv
+psycopg2-binary
+ifcopenshell
+shapely
+numpy
+pyproj
+loguru

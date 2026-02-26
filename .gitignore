@@ -1,0 +1,35 @@
+node_modules
+p2g2b3dm.exe
+
+# python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# env
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+ENV/
+env/
+
+# logs
+*.log
+logs/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
