@@ -155,7 +155,6 @@ class IfcImportJob:
         default_hex="#D3D3D3FF"
     ):
         basecolors = [default_hex] * tri_count
-        emissivecolors = [default_hex] * tri_count
         rgba_to_hex = self.rgba_to_hex
         material_cache_local = material_cache
         hex_cache = {}
@@ -172,11 +171,9 @@ class IfcImportJob:
 
             for idx in face_indices:
                 if 0 <= idx < tri_count:
-                    emissivecolors[idx] = "#1A1A1A"
                     basecolors[idx] = hexcolor
 
         return {
-            "EmissiveColors": emissivecolors,
             "PbrMetallicRoughness": {
                 "BaseColors": basecolors
             }
