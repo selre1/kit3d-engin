@@ -11,7 +11,7 @@ celery_app = Celery(
 )
 
 celery_app.conf.update(
-    task_default_queue=os.getenv("CELERY_QUEUE", "import_jobs"),
+    task_default_queue=os.getenv("DEFAULT_QUEUE", "import_jobs"),
    # task_acks_late=os.getenv("CELERY_ACKS_LATE", "false").lower() == "true",
     worker_prefetch_multiplier=int(os.getenv("CELERY_PREFETCH", "1")),
     broker_heartbeat=int(os.getenv("CELERY_BROKER_HEARTBEAT", "120")),

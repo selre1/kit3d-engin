@@ -25,4 +25,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["sh", "-c", "celery -A worker.celery_app worker -l info -Q ${CELERY_QUEUES:-import_jobs,tile_jobs} -P prefork --concurrency ${CELERY_CONCURRENCY:-4}"]
+CMD ["sh", "-c", "celery -A worker.celery_app worker -l info -E -Q ${CELERY_QUEUE} -P prefork --concurrency ${CELERY_CONCURRENCY:-4}"]
