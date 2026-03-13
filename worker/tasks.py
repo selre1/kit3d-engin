@@ -1,3 +1,4 @@
+import logging
 import os
 
 from celery import chord
@@ -11,17 +12,22 @@ from worker.db.repository import (
     set_import_job_started,
     set_tile_job_finished,
     set_tile_job_started,
+    upsert_tileset_status,
+    upsert_tilesets_pending,
 )
 from worker.jobs.ifc_import import IfcImportJob
 from worker.jobs.tile_generator import run_3dtiles
 from worker.utils.task_utils import format_class_name
+
+logger = logging.getLogger(__name__)
 
 
 def db_call(fn, *args):
     try:
         fn(*args)
     except Exception:
-        pass
+        logger.exception("db_call failed: %s", getattr(fn, "__name__", str(fn)))
+
 
 
 def _build_tile_options(
@@ -82,18 +88,48 @@ def import_ifc_task(payload):
 
 @celery_app.task(name="run_generate_3dtiles", queue="tile_jobs", acks_late=False)
 def run_generate_3dtiles(options):
+    tile_job_id = options.get("tileJobId")
     ifc_class = options.get("ifc_class")
     default_tileset_url = options.get("tileset_url")
 
+    if tile_job_id and ifc_class and default_tileset_url:
+        db_call(
+            upsert_tileset_status,
+            tile_job_id,
+            ifc_class,
+            default_tileset_url,
+            JobStatus.RUNNING,
+            None,
+        )
+
     try:
         generated = run_3dtiles(options)
+        tileset_url = generated.get("tileset_url") or default_tileset_url
+        if tile_job_id and ifc_class and tileset_url:
+            db_call(
+                upsert_tileset_status,
+                tile_job_id,
+                ifc_class,
+                tileset_url,
+                JobStatus.DONE,
+                None,
+            )
         return {
             "ifc_class": ifc_class,
-            "tileset_url": generated.get("tileset_url") or default_tileset_url,
+            "tileset_url": tileset_url,
             "status": JobStatus.DONE.value,
             "error": None,
         }
     except Exception as exc:
+        if tile_job_id and ifc_class and default_tileset_url:
+            db_call(
+                upsert_tileset_status,
+                tile_job_id,
+                ifc_class,
+                default_tileset_url,
+                JobStatus.FAILED,
+                str(exc),
+            )
         return {
             "ifc_class": ifc_class,
             "tileset_url": default_tileset_url,
@@ -207,12 +243,16 @@ def run_3dtiles_by_class(self, options):
         )
 
         class_groups = []
+        pending_tilesets: list[tuple[str, str]] = []
 
         for ifc_class in classes:
             class_name = format_class_name(ifc_class)
             class_output = os.path.join(output_dir, class_name)
             tileset_rel = os.path.relpath(class_output, assets_root).replace("\\", "/")
             default_tileset_url = f"/tiles/{tileset_rel}/tileset.json"
+
+            if tile_job_id:
+                pending_tilesets.append((ifc_class, default_tileset_url))
 
             tile_options = _build_tile_options(
                 project_id=project_id,
@@ -227,6 +267,9 @@ def run_3dtiles_by_class(self, options):
             class_groups.append(
                 run_generate_3dtiles.s(tile_options).set(queue="tile_jobs")
             )
+
+        if tile_job_id and pending_tilesets:
+            db_call(upsert_tilesets_pending, tile_job_id, pending_tilesets)
 
         callback_result = convert_3dtiles_results.s(
             {
