@@ -1,7 +1,6 @@
 import os
 
 from celery import chord
-from celery.result import allow_join_result
 
 from worker.celery_app import celery_app
 from worker.core.status import CeleryState, JobStatus
@@ -239,13 +238,17 @@ def run_3dtiles_by_class(self, options):
 
         result = chord(class_groups)(callback_result)
 
-        with allow_join_result():
-            final_payload = result.get(propagate=True)
-
-        if not isinstance(final_payload, dict):
-            raise RuntimeError("invalid chord callback payload")
-
-        return final_payload
+        return {
+            "status": JobStatus.RUNNING.value,
+            "tile_job_id": tile_job_id,
+            "project_id": project_id,
+            "tile_path": output_dir,
+            "total_classes": total_classes,
+            "done_classes": 0,
+            "failed_classes": 0,
+            "tilesets": [],
+            "chord_task_id": result.id,
+        }
     except Exception:
         if tile_job_id:
             db_call(
