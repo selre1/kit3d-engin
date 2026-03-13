@@ -22,7 +22,7 @@ def _compute_tileset_url(output_path: str, assets_root: str) -> str:
     return f"/tiles/{rel}/tileset.json"
 
 
-def run_generate_3dtiles(options: dict) -> dict:
+def run_3dtiles(options: dict) -> dict:
     db_host = os.getenv("DB_HOST", "localhost")
     db_user = os.getenv("DB_USER", "postgres")
     db_name = os.getenv("DB_NAME", "tile_worker")
