@@ -200,7 +200,7 @@ def run_3dtiles_by_class(self, options):
 
     assets_root = os.getenv("ASSETS_DIR", "assets")
     job_folder = tile_job_id or "manual"
-    output_dir = os.path.join(assets_root, project_id, "tiles", job_folder)
+    output_dir = os.path.join(assets_root, "model", project_id, "tiles", job_folder)
 
     total_classes = 0
 
