@@ -63,6 +63,8 @@ def run_3dtiles(options: dict) -> dict:
         options.get("shaders_column", "shaders"),
         "-r",
         options.get("replace", "REPLACE"),
+        "--add_outlines",
+        str("true").lower(),
         "--use_implicit_tiling",
         str(options.get("use_implicit_tiling", "true")).lower(),
         "--max_features_per_tile",
