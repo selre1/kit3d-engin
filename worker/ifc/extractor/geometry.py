@@ -13,7 +13,10 @@ class GeometryExtractor:
         if not ifc_object.Representation:
             return None
 
-        shape = geom.create_shape(self.settings, ifc_object)
+        try:
+            shape = geom.create_shape(self.settings, ifc_object)
+        except RuntimeError:
+            return None
 
         verts = np.reshape(shape.geometry.verts, (-1, 3))
         faces = np.reshape(shape.geometry.faces, (-1, 3))

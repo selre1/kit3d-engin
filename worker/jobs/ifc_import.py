@@ -174,7 +174,6 @@ class IfcImportJob:
                     basecolors[idx] = hexcolor
 
         return {
-            "EmissiveColors": basecolors,
             "PbrMetallicRoughness": {
                 "BaseColors": basecolors
             }
