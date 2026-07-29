@@ -50,5 +50,5 @@ class DBWriter:
                         shaders = EXCLUDED.shaders
                     """,
                     batch,
-                    template="(%s, ST_Force3D(ST_SetSRID(ST_GeomFromWKB(%s), 5186)), %s::jsonb)"
+                    template="(%s, ST_Force3D(ST_SetSRID(ST_GeomFromWKB(%s), 5187)), %s::jsonb)"
                 )
